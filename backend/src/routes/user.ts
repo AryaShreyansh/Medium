@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { decode, sign, verify } from 'hono/jwt';
 import { signinInput, signupInput } from "@shreyansharya1/medium-common";
+import { shouldProcessLinkClick } from "react-router-dom/dist/dom";
 
 //** */
 export const userRouter = new Hono<{
@@ -104,5 +105,29 @@ userRouter.post('/signin', async (c)=>{
       error:e
     })
  }
+
+})
+
+userRouter.delete('/delete', async (c)=>{
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  try{
+      await prisma.user.deleteMany({});
+      
+      return c.json({
+        message:"All users deleted successfully",
+        success: true
+      })
+  }catch(err){
+
+    c.status(403);
+    return c.json({
+      success: false,
+      message:"Error while deleting users",
+    })
+  }
+  
 
 })
